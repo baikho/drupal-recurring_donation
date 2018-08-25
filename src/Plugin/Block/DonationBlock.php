@@ -4,9 +4,13 @@ namespace Drupal\recurring_donation\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Form\FormBuilderInterface;
+use Drupal\Core\Form\FormInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\recurring_donation\DonationTypes;
 
@@ -19,7 +23,14 @@ use Drupal\recurring_donation\DonationTypes;
  *   category = @Translation("Forms")
  * )
  */
-class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface {
+class DonationBlock extends BlockBase implements FormInterface, ContainerFactoryPluginInterface {
+
+  /**
+   * The form builder.
+   *
+   * @var \Drupal\Core\Form\FormBuilderInterface
+   */
+  protected $formBuilder;
 
   /**
    * Stores the configuration factory.
@@ -37,11 +48,14 @@ class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
+   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   *   The form builder.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, FormBuilderInterface $form_builder, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->formBuilder = $form_builder;
     $this->configFactory = $config_factory;
   }
 
@@ -53,6 +67,7 @@ class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface
       $configuration,
       $plugin_id,
       $plugin_definition,
+      $container->get('form_builder'),
       $container->get('config.factory')
     );
   }
@@ -68,51 +83,92 @@ class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface
    * {@inheritdoc}
    */
   public function build() {
+    return $this->formBuilder->getForm($this);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormId() {
+    return 'recurring_donation_block_form';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
 
     $config = $this->configFactory->get('recurring_donation.settings');
-    $types = [];
 
-    foreach (DonationTypes::getTypes() as $donationType) {
-      // Early opt-out if not enabled.
-      if ($donationType === DonationTypes::RECURRING && (bool) $config->get('recurring.enabled') !== TRUE) {
-        continue;
+    $form['cmd'] = [
+      '#type' => 'hidden',
+      '#default_value' => '_donations',
+    ];
+
+    $form['business'] = [
+      '#type' => 'hidden',
+      '#default_value' => $config->get('receiver'),
+    ];
+
+    if ($amounts = explode(',', str_replace(' ', '', $config->get('options')))) {
+
+      $options = [];
+      foreach ($amounts as $amount) {
+        $options[$amount] = $config->get('currency_sign') . ' ' . $amount;
       }
 
-      $types[$donationType] = [
-        'name' => $donationType,
-        'label' => $config->get($donationType . '.label'),
-        'receiver' => $config->get('receiver'),
-        'return' => $config->get('return'),
-        'custom' => $config->get('custom'),
-        'currency_code' => $config->get('currency_code'),
-        'currency_sign' => $config->get('currency_sign'),
+      if ($config->get('custom')) {
+        $options['other'] = $this->t('Other');
+      }
+
+      $form['amount'] = [
+        '#title' => $this->t('Amount'),
+        '#type' => 'radios',
+        '#options' => $options,
+        '#required' => TRUE,
       ];
-
-      // Prepare pre-defined amounts.
-      $options = explode(',', str_replace(' ', '', $config->get('options')));
-
-      if (!empty($options)) {
-        $types[$donationType]['options'] = $options;
-      }
-
-      if ($donationType === DonationTypes::RECURRING) {
-        $types[$donationType]['unit'] = $config->get('unit');
-        $types[$donationType]['duration'] = $config->get('duration');
-      }
     }
 
-    return [
-      '#theme' => 'recurring_donation_block',
-      '#types' => $types,
-      '#env' => $config->get('env') !== TRUE ? 'sandbox.' : '',
-      '#button' => $config->get('button'),
-      '#attached' => [
-        'library' => [
-          'recurring_donation/recurring-donation',
+    $form['custom'] = [
+      '#title' => $this->t('Custom amount'),
+      '#field_prefix' => $config->get('currency_sign'),
+      '#type' => 'number',
+      '#step' => 0.01,
+      '#states' => [
+        'visible' => [
+          ':input[name="amount"]' => ['value' => 'other'],
+        ],
+        'required' => [
+          ':input[name="amount"]' => ['value' => 'other'],
         ],
       ],
     ];
 
+    $form['actions'] = [
+      '#type' => 'actions',
+      'submit' => [
+        '#type' => 'submit',
+        '#value' => $config->get('button'),
+      ],
+    ];
+
+    $env = $config->get('env') !== TRUE ? 'sandbox.' : '';
+    $url = 'https://www.' . $env . 'paypal.com/cgi-bin/webscr';
+    $form['#action'] = Url::fromUri($url, ['external' => TRUE])->toString();
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    drupal_set_message('Donation successful.');
   }
 
 }
