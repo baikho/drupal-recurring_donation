@@ -5,7 +5,7 @@
  *
  * Available variables:
  * - types: PayPal donation types assoc array.
- * - service: PayPal service.
+ * - env: PayPal environment.
  * - button: Button label.
  *
  * @ingroup themeable
@@ -16,7 +16,7 @@
     {% for type in types %}
       {% if type %}
         <div class="donation-block width-{{ 100 / types|length }}">
-          <form action="https://www.{{ service }}paypal.com/cgi-bin/webscr" method="post" target="_blank" class="donation-form">
+          <form action="https://www.{{ env }}paypal.com/cgi-bin/webscr" method="post" target="_blank" class="donation-form">
             <h3>{{ type.label }}</h3>
             {% if type.name == 'single' %}
               <input type="hidden" name="cmd" value="_donations" />

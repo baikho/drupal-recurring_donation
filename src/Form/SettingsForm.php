@@ -5,14 +5,12 @@ namespace Drupal\recurring_donation\Form;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\recurring_donation\DonationTypes;
 
 /**
  * Provides the 'Recurring PayPal donations' configuration form.
  */
 class SettingsForm extends ConfigFormBase {
-
-  const SINGLE = 'single';
-  const RECURRING = 'recurring';
 
   /**
    * {@inheritdoc}
@@ -33,20 +31,10 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function getDonationTypes() {
-    return [
-      self::SINGLE,
-      self::RECURRING,
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function recurringFormStates() {
     return [
       'visible' => [
-        ':input[name="enabled"]' => ['checked' => TRUE],
+        ':input[name="recurring_enabled"]' => ['checked' => TRUE],
       ],
     ];
   }
@@ -58,14 +46,14 @@ class SettingsForm extends ConfigFormBase {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('recurring_donation.settings');
 
-    $form['service'] = [
+    $form['env'] = [
       '#type' => 'select',
-      '#title' => $this->t('Service'),
+      '#title' => $this->t('Environment'),
       '#options' => [
         0 => $this->t('sandbox'),
         1 => $this->t('production'),
       ],
-      '#default_value' => $config->get('service') ?: 0,
+      '#default_value' => $config->get('env') ?: 0,
     ];
 
     $form['receiver'] = [
@@ -73,34 +61,40 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('PayPal receiving account'),
       '#description' => $this->t("The PayPal account's e-mail address"),
       '#required' => TRUE,
+      '#default_value' => $config->get('receiver'),
     ];
 
     $form['options'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Pre-defined amounts'),
+      '#default_value' => $config->get('options'),
     ];
 
     $form['custom'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow custom amount'),
+      '#default_value' => $config->get('custom'),
     ];
 
     $form['return'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Return URL'),
       '#description' => $this->t('The return URL upon successful payment'),
+      '#default_value' => $config->get('return'),
     ];
 
     $form['currency_code'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Currency code'),
       '#description' => $this->t('ISO 4217 Currency Code'),
+      '#default_value' => $config->get('currency_code'),
     ];
 
     $form['currency_sign'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Currency sign'),
       '#description' => $this->t('The currency sign'),
+      '#default_value' => $config->get('currency_sign'),
     ];
 
     $form['donate_button_text'] = [
@@ -109,22 +103,23 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('button'),
     ];
 
-    foreach ($this->getDonationTypes() as $donationType) {
+    foreach (DonationTypes::getTypes() as $key => $donationType) {
 
-      $form[$donationType] = [
+      $form[$key] = [
         '#type' => 'details',
         '#title' => $this->t('@donation_type donation settings', ['@donation_type' => Unicode::ucfirst($donationType)]),
         '#open' => TRUE,
       ];
 
-      if ($donationType === self::RECURRING) {
+      if ($donationType === DonationTypes::RECURRING) {
 
-        $form[$donationType]['enabled'] = [
+        $form[$key][$donationType . '_enabled'] = [
           '#type' => 'checkbox',
           '#title' => $this->t('Enable recurring donations'),
+          '#default_value' => $config->get($donationType . '.enabled'),
         ];
 
-        $form[$donationType]['unit'] = [
+        $form[$key][$donationType . '_unit'] = [
           '#type' => 'select',
           '#title' => $this->t('Recurring unit'),
           '#options' => [
@@ -134,24 +129,25 @@ class SettingsForm extends ConfigFormBase {
             'Y' => $this->t('year'),
           ],
           '#states' => $this->recurringFormStates(),
+          '#default_value' => $config->get($donationType . '.unit'),
         ];
 
-        $form[$donationType]['duration'] = [
+        $form[$key][$donationType . '_duration'] = [
           '#type' => 'textfield',
           '#title' => $this->t('Recurring duration'),
           '#states' => $this->recurringFormStates(),
+          '#default_value' => $config->get($donationType . '.duration'),
         ];
-
       }
 
-      $form[$donationType]['label'] = [
+      $form[$key][$donationType . '_label'] = [
         '#type' => 'textfield',
         '#title' => $this->t('@donation_type donation label', ['@donation_type' => Unicode::ucfirst($donationType)]),
-        '#default_value' => $config->get('label.' . $donationType),
+        '#default_value' => $config->get($donationType . '.label'),
       ];
 
-      if ($donationType === self::RECURRING) {
-        $form[$donationType]['label']['#states'] = $this->recurringFormStates();
+      if ($donationType === DonationTypes::RECURRING) {
+        $form[$key][$donationType . '_label']['#states'] = $this->recurringFormStates();
       }
 
     }
@@ -161,15 +157,31 @@ class SettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
-   *
-   * @todo: cache clear or re-save PayPal block instances after submit.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $this->config('recurring_donation.settings')
-      ->set('label.single', (string) $form_state->getValue('single_label'))
-      ->set('label.recurring', (string) $form_state->getValue('recurring_label'))
-      ->set('button', (string) $form_state->getValue('donate_button_text'))
-      ->save(TRUE);
+    $config = $this->config('recurring_donation.settings');
+    $config
+      ->set('env', $form_state->getValue('env'))
+      ->set('receiver', $form_state->getValue('receiver'))
+      ->set('options', $form_state->getValue('options'))
+      ->set('custom', $form_state->getValue('custom'))
+      ->set('return', $form_state->getValue('return'))
+      ->set('currency_code', $form_state->getValue('currency_code'))
+      ->set('currency_sign', $form_state->getValue('currency_sign'))
+      ->set('button', $form_state->getValue('donate_button_text'));
+
+    foreach (DonationTypes::getTypes() as $donationType) {
+      // Recurring donation type config.
+      if ($donationType === DonationTypes::RECURRING) {
+        $config
+          ->set($donationType . '.enabled', $form_state->getValue($donationType . '_enabled'))
+          ->set($donationType . '.unit', $form_state->getValue($donationType . '_unit'))
+          ->set($donationType . '.duration', $form_state->getValue($donationType . '_duration'));
+      }
+      $config->set($donationType . '.label', $form_state->getValue($donationType . '_label'));
+    }
+
+    $config->save(TRUE);
   }
 
 }
