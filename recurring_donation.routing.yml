@@ -1,0 +1,7 @@
+recurring_donation.configure:
+  path: '/admin/config/services/recurring-paypal-donations'
+  defaults:
+    _form: '\Drupal\recurring_donation\Form\SettingsForm'
+    _title: 'Recurring PayPal donations'
+  requirements:
+    _permission: 'administer recurring paypal donations'

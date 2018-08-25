@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ * Recurring PayPal donation module file.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function recurring_donation_theme($existing, $type, $theme, $path) {
+  return array(
+    'donation_block' => array(
+      'variables' => array(
+        'types' => array(),
+        'service' => NULL,
+        'button' => NULL,
+      ),
+    ),
+  );
+}

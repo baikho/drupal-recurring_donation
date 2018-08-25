@@ -1,0 +1,6 @@
+label:
+  single: 'Make a one-time donation'
+  recurring: 'Make a recurring donation'
+button: 'Donate now'
+langcode: en
+default_langcode: en

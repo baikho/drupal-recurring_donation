@@ -1,0 +1,7 @@
+name: 'Recurring PayPal donations'
+type: module
+description: 'Provides a PayPal block with donation forms.'
+core: '8.x'
+project: 'Recurring PayPal donations'
+package: 'PayPal'
+configure: recurring_donation.configure

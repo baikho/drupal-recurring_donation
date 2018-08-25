@@ -1,0 +1,5 @@
+recurring_donation.configure:
+  title: 'Recurring PayPal donations'
+  description: 'Configure the Recurring PayPal donations.'
+  parent: system.admin_config_services
+  route_name: recurring_donation.configure

@@ -1,0 +1,62 @@
+{#
+/**
+ * @file
+ * @see template_preprocess_paypal_block()
+ *
+ * Available variables:
+ * - types: PayPal donation types assoc array.
+ * - service: PayPal service.
+ * - button: Button label.
+ *
+ * @ingroup themeable
+ */
+#}
+{% if types %}
+  <div class="paypal-block-wrapper">
+    {% for type in types %}
+      {% if type %}
+        <div class="donation-block width-{{ 100 / types|length }}">
+          <form action="https://www.{{ service }}paypal.com/cgi-bin/webscr" method="post" target="_blank" class="donation-form">
+            <h3>{{ type.label }}</h3>
+            {% if type.name == 'single' %}
+              <input type="hidden" name="cmd" value="_donations" />
+            {% elseif type.name == 'recurring' %}
+              <input type="hidden" name="cmd" value="_donations" />
+              <input type="hidden" name="a3" value="" class="amount-holder" />
+              <input type="hidden" name="p3" value="{{ type.duration }}" />
+              <input type="hidden" name="t3" value="{{ type.unit }}" />
+            {% endif %}
+            <input type="hidden" name="landing_page" value="billing" />
+            <input type="hidden" name="business" value="{{ type.receiver }}">
+            <input type="hidden" name="no_note" value="1">
+            <input type="hidden" name="return" value="{{ type.return }}" />
+            <input type="hidden" name="currency_code" value="{{ type.currency_code }}" />
+            <input type="hidden" name="amount" value="" class="donation-amount"/>
+            <ul>
+            {% if type.options|length %}
+              {% for option in type.options %}
+                <li>
+                  <input type="radio" name="select_opt_{{ type.name }}" id="{{ type.name }}-opt-{{ loop.index }}" value="{{ option }}" class="pre-defined" />
+                  <label for="{{ type.name }}-opt-{{ loop.index }}">
+                    <span class="currency">{{ type.currency_sign }}</span> {{ option }}
+                  </label>
+                </li>
+              {% endfor %}
+            {% endif %}
+            {% if type.custom %}
+              <li>
+                <input type="radio" name="select_opt_{{ type.name }}" id="{{ type.name }}-opt-0" />
+                <label for="{{ type.name }}-opt-0">
+                  <span class="currency">{{ type.currency_sign }} </span>
+                  <input type="text" name="other" size="" value="" class="other" />
+                </label>
+              </li>
+            {% endif %}
+            </ul>
+            <button type="button" id="{{ type.name }}-submit" value="{{ button }}" class="button form-submit donation-submit-button">{{ button }}</button>
+          </form>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
