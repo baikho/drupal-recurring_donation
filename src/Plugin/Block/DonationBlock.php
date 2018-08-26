@@ -134,6 +134,7 @@ class DonationBlock extends BlockBase implements FormInterface, ContainerFactory
       '#field_prefix' => $config->get('currency_sign'),
       '#type' => 'number',
       '#step' => 0.01,
+      '#min' => 0.01,
       '#states' => [
         'visible' => [
           ':input[name="amount"]' => ['value' => 'other'],

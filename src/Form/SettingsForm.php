@@ -3,14 +3,47 @@
 namespace Drupal\recurring_donation\Form;
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\recurring_donation\DonationTypes;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Egulias\EmailValidator\EmailValidator;
 
 /**
  * Provides the 'Recurring PayPal donations' configuration form.
  */
 class SettingsForm extends ConfigFormBase {
+
+  /**
+   * The email validator.
+   *
+   * @var \Egulias\EmailValidator\EmailValidator
+   */
+  protected $emailValidator;
+
+  /**
+   * Constructs a \Drupal\system\ConfigFormBase object.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
+   * @param \Egulias\EmailValidator\EmailValidator $email_validator
+   *   Email validator.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, EmailValidator $email_validator) {
+    parent::__construct($config_factory);
+    $this->emailValidator = $email_validator;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('email.validator')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -31,12 +64,20 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function recurringFormStates() {
-    return [
+  protected function recurringFormStates($required = FALSE) {
+    $states = [
       'visible' => [
         ':input[name="recurring_enabled"]' => ['checked' => TRUE],
       ],
     ];
+
+    if ($required) {
+      $states['required'] = [
+        ':input[name="recurring_enabled"]' => ['checked' => TRUE],
+      ];
+    }
+
+    return $states;
   }
 
   /**
@@ -60,8 +101,16 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('PayPal receiving account'),
       '#description' => $this->t("The PayPal account's e-mail address"),
-      '#required' => TRUE,
       '#default_value' => $config->get('receiver'),
+      '#required' => TRUE,
+    ];
+
+    $form['return'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Return URL'),
+      '#description' => $this->t('The return URL upon successful payment'),
+      '#default_value' => $config->get('return'),
+      '#required' => TRUE,
     ];
 
     $form['options'] = [
@@ -74,13 +123,6 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'checkbox',
       '#title' => $this->t('Allow custom amount'),
       '#default_value' => $config->get('custom'),
-    ];
-
-    $form['return'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Return URL'),
-      '#description' => $this->t('The return URL upon successful payment'),
-      '#default_value' => $config->get('return'),
     ];
 
     $form['currency_code'] = [
@@ -128,14 +170,15 @@ class SettingsForm extends ConfigFormBase {
             'M' => $this->t('month'),
             'Y' => $this->t('year'),
           ],
-          '#states' => $this->recurringFormStates(),
+          '#states' => $this->recurringFormStates(TRUE),
           '#default_value' => $config->get($donationType . '.unit'),
         ];
 
         $form[$key][$donationType . '_duration'] = [
-          '#type' => 'textfield',
+          '#type' => 'number',
+          '#min' => 1,
           '#title' => $this->t('Recurring duration'),
-          '#states' => $this->recurringFormStates(),
+          '#states' => $this->recurringFormStates(TRUE),
           '#default_value' => $config->get($donationType . '.duration'),
         ];
       }
@@ -153,6 +196,19 @@ class SettingsForm extends ConfigFormBase {
     }
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    $receiver = $form_state->getValue('receiver');
+    if (!$this->emailValidator->isValid($receiver)) {
+      $form_state->setErrorByName('emailAddress', $this->t('%email is an invalid email address.', [
+        '%email' => $receiver,
+      ]));
+    }
   }
 
   /**
@@ -181,7 +237,8 @@ class SettingsForm extends ConfigFormBase {
       $config->set($donationType . '.label', $form_state->getValue($donationType . '_label'));
     }
 
-    $config->save(TRUE);
+    $config->save();
+    parent::submitForm($form, $form_state);
   }
 
 }
