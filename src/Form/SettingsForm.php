@@ -195,6 +195,7 @@ class SettingsForm extends ConfigFormBase {
         $form[$key][$donationType . '_enabled'] = [
           '#type' => 'checkbox',
           '#title' => $this->t('Enable recurring donations'),
+          '#description' => $this->t('This feature is only available to Business and Premier Accounts.'),
           '#default_value' => $config->get($donationType . '.enabled'),
         ];
 

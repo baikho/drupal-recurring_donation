@@ -86,6 +86,24 @@ class DonationForm extends FormBase {
       ];
     }
 
+    if ($donationType === DonationTypes::RECURRING) {
+      // Regular subscription price.
+      $form['a3'] = [
+        '#type' => 'hidden',
+        '#default_value' => 100,
+      ];
+      // Subscription duration.
+      $form['p3'] = [
+        '#type' => 'hidden',
+        '#default_value' => $config->get($donationType . '.duration'),
+      ];
+      // Regular subscription units of duration.
+      $form['t3'] = [
+        '#type' => 'hidden',
+        '#default_value' => $config->get($donationType . '.unit'),
+      ];
+    }
+
     $form['actions'] = [
       '#type' => 'actions',
       'submit' => [
@@ -94,7 +112,7 @@ class DonationForm extends FormBase {
       ],
     ];
 
-    $env = $config->get('env') !== TRUE ? 'sandbox.' : '';
+    $env = (bool) $config->get('env') !== TRUE ? 'sandbox.' : '';
     $url = 'https://www.' . $env . 'paypal.com/cgi-bin/webscr';
     $form['#action'] = Url::fromUri($url, ['external' => TRUE])->toString();
 
