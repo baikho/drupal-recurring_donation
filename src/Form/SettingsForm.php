@@ -66,7 +66,7 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function customAmountsFormStates() {
+  protected function customAmountFormStates() {
     return [
       'visible' => [
         ':input[name="custom"]' => ['checked' => TRUE],
@@ -79,12 +79,60 @@ class SettingsForm extends ConfigFormBase {
    */
   protected function recurringFormStates(array $states = []) {
     $stateRules = [];
-    foreach ($states as $state) {
-      $stateRules[$state] = [
-        ':input[name="recurring_enabled"]' => ['checked' => TRUE],
-      ];
+    foreach ($states as $a => $state) {
+      if (is_array($state)) {
+        foreach ($state as $b => $val) {
+          $stateRules[$a] = [
+            ':input[name="recurring_enabled"]' => ['checked' => TRUE],
+            ':input[name="' . $b . '"]' => ['value' => $val],
+          ];
+        }
+      }
+      else {
+        $stateRules[$state] = [
+          ':input[name="recurring_enabled"]' => ['checked' => TRUE],
+        ];
+      }
     }
     return $stateRules;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function recurringUnitOptions() {
+    return [
+      'D' => $this->t('day'),
+      'W' => $this->t('week'),
+      'M' => $this->t('month'),
+      'Y' => $this->t('year'),
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function recurringDurationOptions($unit = 'D') {
+    switch ($unit) {
+      case 'D':
+      default:
+        $max = 90;
+        break;
+
+      case 'W':
+        $max = 52;
+        break;
+
+      case 'M':
+        $max = 24;
+        break;
+
+      case 'Y':
+        $max = 5;
+        break;
+    }
+    $options = range(1, $max);
+    return array_combine($options, $options);
   }
 
   /**
@@ -147,7 +195,7 @@ class SettingsForm extends ConfigFormBase {
       '#step' => 0.01,
       '#min' => 0,
       '#default_value' => $config->get('custom_min'),
-      '#states' => $this->customAmountsFormStates(),
+      '#states' => $this->customAmountFormStates(),
     ];
 
     $form['custom_max'] = [
@@ -156,7 +204,7 @@ class SettingsForm extends ConfigFormBase {
       '#step' => 0.01,
       '#min' => 1,
       '#default_value' => $config->get('custom_max'),
-      '#states' => $this->customAmountsFormStates(),
+      '#states' => $this->customAmountFormStates(),
     ];
 
     $documentationLink = Link::fromTextAndUrl('Currencies Supported by PayPal', Url::fromUri('//developer.paypal.com/docs/classic/api/currency_codes/#paypal'));
@@ -199,26 +247,34 @@ class SettingsForm extends ConfigFormBase {
           '#default_value' => $config->get($donationType . '.enabled'),
         ];
 
+        $recurringUnitOptions = $this->recurringUnitOptions();
+
         $form[$key][$donationType . '_unit'] = [
           '#type' => 'select',
           '#title' => $this->t('Recurring unit'),
-          '#options' => [
-            'D' => $this->t('day'),
-            'W' => $this->t('week'),
-            'M' => $this->t('month'),
-            'Y' => $this->t('year'),
-          ],
+          '#options' => $recurringUnitOptions,
           '#states' => $this->recurringFormStates(['visible', 'required']),
           '#default_value' => $config->get($donationType . '.unit'),
         ];
 
-        $form[$key][$donationType . '_duration'] = [
-          '#type' => 'number',
-          '#min' => 1,
-          '#title' => $this->t('Recurring duration'),
-          '#states' => $this->recurringFormStates(['visible', 'required']),
-          '#default_value' => $config->get($donationType . '.duration'),
-        ];
+        foreach (array_keys($recurringUnitOptions) as $recurringUnitOption) {
+          // Dependent recurring duration dropdown.
+          $form[$key][$donationType . '_duration_' . $recurringUnitOption] = [
+            '#type' => 'select',
+            '#title' => $this->t('Recurring duration'),
+            '#options' => $this->recurringDurationOptions($recurringUnitOption),
+            '#states' => $this->recurringFormStates([
+              'visible' => [
+                $donationType . '_unit' => $recurringUnitOption,
+              ],
+              'required' => [
+                $donationType . '_unit' => $recurringUnitOption,
+              ],
+            ]),
+            '#default_value' => $config->get($donationType . '.duration'),
+          ];
+        }
+
       }
 
       $form[$key][$donationType . '_label'] = [
@@ -281,7 +337,7 @@ class SettingsForm extends ConfigFormBase {
         $config
           ->set($donationType . '.enabled', $form_state->getValue($donationType . '_enabled'))
           ->set($donationType . '.unit', $form_state->getValue($donationType . '_unit'))
-          ->set($donationType . '.duration', $form_state->getValue($donationType . '_duration'));
+          ->set($donationType . '.duration', $form_state->getValue($donationType . '_duration_' . $form_state->getValue($donationType . '_unit')));
       }
       $config->set($donationType . '.label', $form_state->getValue($donationType . '_label'));
     }

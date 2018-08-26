@@ -45,6 +45,11 @@ class DonationForm extends FormBase {
       '#default_value' => $config->get('receiver'),
     ];
 
+    $form['currency_code'] = [
+      '#type' => 'hidden',
+      '#default_value' => $config->get('currency_code'),
+    ];
+
     $amounts = array_filter(explode(',', str_replace(' ', '', $config->get('options'))));
     $custom = $config->get('custom');
 
