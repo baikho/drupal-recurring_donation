@@ -5,14 +5,12 @@ namespace Drupal\recurring_donation\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Form\FormBuilderInterface;
-use Drupal\Core\Form\FormInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\recurring_donation\Form\DonationForm;
 use Drupal\recurring_donation\DonationTypes;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a 'Recurring PayPal donations' block.
@@ -23,7 +21,7 @@ use Drupal\recurring_donation\DonationTypes;
  *   category = @Translation("Forms")
  * )
  */
-class DonationBlock extends BlockBase implements FormInterface, ContainerFactoryPluginInterface {
+class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * The form builder.
@@ -83,93 +81,16 @@ class DonationBlock extends BlockBase implements FormInterface, ContainerFactory
    * {@inheritdoc}
    */
   public function build() {
-    return $this->formBuilder->getForm($this);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormId() {
-    return 'recurring_donation_block_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-
+    $build = [];
     $config = $this->configFactory->get('recurring_donation.settings');
-
-    $form['cmd'] = [
-      '#type' => 'hidden',
-      '#default_value' => '_donations',
-    ];
-
-    $form['business'] = [
-      '#type' => 'hidden',
-      '#default_value' => $config->get('receiver'),
-    ];
-
-    if ($amounts = explode(',', str_replace(' ', '', $config->get('options')))) {
-
-      $options = [];
-      foreach ($amounts as $amount) {
-        $options[$amount] = $config->get('currency_sign') . ' ' . $amount;
+    foreach (DonationTypes::getTypes() as $donationType) {
+      // Early opt-out if recurring donation type is not enabled.
+      if ($donationType === DonationTypes::RECURRING && (bool) $config->get('recurring.enabled') !== TRUE) {
+        continue;
       }
-
-      if ($config->get('custom')) {
-        $options['other'] = $this->t('Other');
-      }
-
-      $form['amount'] = [
-        '#title' => $this->t('Amount'),
-        '#type' => 'radios',
-        '#options' => $options,
-        '#required' => TRUE,
-      ];
+      $build[] = $this->formBuilder->getForm(DonationForm::class, $donationType);
     }
-
-    $form['custom'] = [
-      '#title' => $this->t('Custom amount'),
-      '#field_prefix' => $config->get('currency_sign'),
-      '#type' => 'number',
-      '#step' => 0.01,
-      '#min' => 0.01,
-      '#states' => [
-        'visible' => [
-          ':input[name="amount"]' => ['value' => 'other'],
-        ],
-        'required' => [
-          ':input[name="amount"]' => ['value' => 'other'],
-        ],
-      ],
-    ];
-
-    $form['actions'] = [
-      '#type' => 'actions',
-      'submit' => [
-        '#type' => 'submit',
-        '#value' => $config->get('button'),
-      ],
-    ];
-
-    $env = $config->get('env') !== TRUE ? 'sandbox.' : '';
-    $url = 'https://www.' . $env . 'paypal.com/cgi-bin/webscr';
-    $form['#action'] = Url::fromUri($url, ['external' => TRUE])->toString();
-
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    drupal_set_message('Donation successful.');
+    return $build;
   }
 
 }
