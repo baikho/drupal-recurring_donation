@@ -77,20 +77,14 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function recurringFormStates($required = FALSE) {
-    $states = [
-      'visible' => [
-        ':input[name="recurring_enabled"]' => ['checked' => TRUE],
-      ],
-    ];
-
-    if ($required) {
-      $states['required'] = [
+  protected function recurringFormStates(array $states = []) {
+    $stateRules = [];
+    foreach ($states as $state) {
+      $stateRules[$state] = [
         ':input[name="recurring_enabled"]' => ['checked' => TRUE],
       ];
     }
-
-    return $states;
+    return $stateRules;
   }
 
   /**
@@ -213,7 +207,7 @@ class SettingsForm extends ConfigFormBase {
             'M' => $this->t('month'),
             'Y' => $this->t('year'),
           ],
-          '#states' => $this->recurringFormStates(TRUE),
+          '#states' => $this->recurringFormStates(['visible', 'required']),
           '#default_value' => $config->get($donationType . '.unit'),
         ];
 
@@ -221,7 +215,7 @@ class SettingsForm extends ConfigFormBase {
           '#type' => 'number',
           '#min' => 1,
           '#title' => $this->t('Recurring duration'),
-          '#states' => $this->recurringFormStates(TRUE),
+          '#states' => $this->recurringFormStates(['visible', 'required']),
           '#default_value' => $config->get($donationType . '.duration'),
         ];
       }
@@ -233,7 +227,7 @@ class SettingsForm extends ConfigFormBase {
       ];
 
       if ($donationType === DonationTypes::RECURRING) {
-        $form[$key][$donationType . '_label']['#states'] = $this->recurringFormStates();
+        $form[$key][$donationType . '_label']['#states'] = $this->recurringFormStates(['visible']);
       }
 
     }
