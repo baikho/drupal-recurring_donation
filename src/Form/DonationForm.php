@@ -40,6 +40,11 @@ class DonationForm extends FormBase {
       '#default_value' => $donationType === DonationTypes::RECURRING ? '_xclick-subscriptions' : '_donations',
     ];
 
+    $form['no_note'] = [
+      '#type' => 'hidden',
+      '#default_value' => $donationType === DonationTypes::RECURRING,
+    ];
+
     $form['business'] = [
       '#type' => 'hidden',
       '#default_value' => $config->get('receiver'),
@@ -48,6 +53,10 @@ class DonationForm extends FormBase {
     $form['currency_code'] = [
       '#type' => 'hidden',
       '#default_value' => $config->get('currency_code'),
+    ];
+
+    $form['amount'] = [
+      '#type' => 'hidden',
     ];
 
     $amounts = array_filter(explode(',', str_replace(' ', '', $config->get('options'))));
@@ -70,6 +79,13 @@ class DonationForm extends FormBase {
           '#type' => 'radios',
           '#options' => $options,
           '#required' => TRUE,
+          '#attributes' => [
+            'class' => [
+              // Add classes in favor of JS.
+              $donationType,
+              'donation-amount-choice',
+            ],
+          ],
         ];
       }
 
@@ -88,6 +104,13 @@ class DonationForm extends FormBase {
             ':input[name="' . $donationType . '_amount"]' => ['value' => 'other'],
           ],
         ],
+        '#attributes' => [
+          'class' => [
+            // Add classes in favor of JS.
+            $donationType,
+            'donation-custom-amount',
+          ],
+        ],
       ];
     }
 
@@ -95,7 +118,6 @@ class DonationForm extends FormBase {
       // Regular subscription price.
       $form['a3'] = [
         '#type' => 'hidden',
-        '#default_value' => 100,
       ];
       // Subscription duration.
       $form['p3'] = [
@@ -121,6 +143,12 @@ class DonationForm extends FormBase {
     $url = 'https://www.' . $env . 'paypal.com/cgi-bin/webscr';
     $form['#action'] = Url::fromUri($url, ['external' => TRUE])->toString();
 
+    $form['#attached'] = [
+      'library' => [
+        'recurring_donation/recurring-donation',
+      ],
+    ];
+
     return $form;
   }
 
@@ -128,7 +156,7 @@ class DonationForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    drupal_set_message('Donation successful.');
+    // This submit handler is not used.
   }
 
 }
