@@ -77,20 +77,20 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function recurringFormStates(array $states = []) {
+  protected function formStates($donationType, array $states = []) {
     $stateRules = [];
     foreach ($states as $a => $state) {
       if (is_array($state)) {
         foreach ($state as $b => $val) {
           $stateRules[$a] = [
-            ':input[name="recurring_enabled"]' => ['checked' => TRUE],
+            ':input[name="' . $donationType . '_enabled"]' => ['checked' => TRUE],
             ':input[name="' . $b . '"]' => ['value' => $val],
           ];
         }
       }
       else {
         $stateRules[$state] = [
-          ':input[name="recurring_enabled"]' => ['checked' => TRUE],
+          ':input[name="' . $donationType . '_enabled"]' => ['checked' => TRUE],
         ];
       }
     }
@@ -249,14 +249,22 @@ class SettingsForm extends ConfigFormBase {
         '#open' => TRUE,
       ];
 
+      $form[$key][$donationType . '_enabled'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Enable @donation_type donations', ['@donation_type' => $donationType]),
+        '#default_value' => $config->get($donationType . '.enabled'),
+      ];
+
+      $form[$key][$donationType . '_label'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('@donation_type donation label', ['@donation_type' => Unicode::ucfirst($donationType)]),
+        '#default_value' => $config->get($donationType . '.label'),
+        '#states' => $this->formStates($donationType, ['visible']),
+      ];
+
       if ($donationType === DonationTypes::RECURRING) {
 
-        $form[$key][$donationType . '_enabled'] = [
-          '#type' => 'checkbox',
-          '#title' => $this->t('Enable recurring donations'),
-          '#description' => $this->t('This feature is only available to Business and Premier Accounts.'),
-          '#default_value' => $config->get($donationType . '.enabled'),
-        ];
+        $form[$key][$donationType . '_enabled']['#description'] = $this->t('This feature is only available to Business and Premier Accounts.');
 
         $recurringUnitOptions = $this->recurringUnitOptions();
 
@@ -264,7 +272,7 @@ class SettingsForm extends ConfigFormBase {
           '#type' => 'select',
           '#title' => $this->t('Recurring unit'),
           '#options' => $recurringUnitOptions,
-          '#states' => $this->recurringFormStates(['visible', 'required']),
+          '#states' => $this->formStates($donationType, ['visible', 'required']),
           '#default_value' => $config->get($donationType . '.unit'),
         ];
 
@@ -274,7 +282,7 @@ class SettingsForm extends ConfigFormBase {
             '#type' => 'select',
             '#title' => $this->t('Recurring duration'),
             '#options' => $this->recurringDurationOptions($recurringUnitOption),
-            '#states' => $this->recurringFormStates([
+            '#states' => $this->formStates($donationType, [
               'visible' => [
                 $donationType . '_unit' => $recurringUnitOption,
               ],
@@ -286,16 +294,6 @@ class SettingsForm extends ConfigFormBase {
           ];
         }
 
-      }
-
-      $form[$key][$donationType . '_label'] = [
-        '#type' => 'textfield',
-        '#title' => $this->t('@donation_type donation label', ['@donation_type' => Unicode::ucfirst($donationType)]),
-        '#default_value' => $config->get($donationType . '.label'),
-      ];
-
-      if ($donationType === DonationTypes::RECURRING) {
-        $form[$key][$donationType . '_label']['#states'] = $this->recurringFormStates(['visible']);
       }
 
     }
@@ -344,14 +342,15 @@ class SettingsForm extends ConfigFormBase {
       ->set('button', $form_state->getValue('donate_button_text'));
 
     foreach (DonationTypes::getTypes() as $donationType) {
+      $config
+        ->set($donationType . '.enabled', $form_state->getValue($donationType . '_enabled'))
+        ->set($donationType . '.label', $form_state->getValue($donationType . '_label'));
       // Recurring donation type config.
       if ($donationType === DonationTypes::RECURRING) {
         $config
-          ->set($donationType . '.enabled', $form_state->getValue($donationType . '_enabled'))
           ->set($donationType . '.unit', $form_state->getValue($donationType . '_unit'))
           ->set($donationType . '.duration', $form_state->getValue($donationType . '_duration_' . $form_state->getValue($donationType . '_unit')));
       }
-      $config->set($donationType . '.label', $form_state->getValue($donationType . '_label'));
     }
 
     $config->save();

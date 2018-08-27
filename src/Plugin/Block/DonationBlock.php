@@ -84,8 +84,8 @@ class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface
     $build = [];
     $config = $this->configFactory->get('recurring_donation.settings');
     foreach (DonationTypes::getTypes() as $donationType) {
-      // Early opt-out if recurring donation type is not enabled.
-      if ($donationType === DonationTypes::RECURRING && (bool) $config->get('recurring.enabled') !== TRUE) {
+      // Early opt-out if donation type is not enabled.
+      if ((bool) $config->get($donationType . '.enabled') !== TRUE) {
         continue;
       }
       $build[] = $this->formBuilder->getForm(DonationForm::class, $donationType);
