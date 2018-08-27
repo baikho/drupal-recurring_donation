@@ -45,6 +45,16 @@ class DonationForm extends FormBase {
       '#default_value' => $config->get('locale_code'),
     ];
 
+    $form['return'] = [
+      '#type' => 'hidden',
+      '#default_value' => $config->get('return'),
+    ];
+
+    $form['cancel_return'] = [
+      '#type' => 'hidden',
+      '#default_value' => $config->get('cancel_return'),
+    ];
+
     $form['no_note'] = [
       '#type' => 'hidden',
       '#default_value' => $donationType === DonationTypes::RECURRING,

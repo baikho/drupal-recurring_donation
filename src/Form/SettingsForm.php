@@ -166,7 +166,6 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Return URL'),
       '#description' => $this->t('The return URL upon successful payment'),
       '#default_value' => $config->get('return'),
-      '#required' => TRUE,
     ];
 
     $form['cancel_return'] = [
@@ -174,7 +173,6 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Cancel return URL'),
       '#description' => $this->t('The return URL upon cancelled payment'),
       '#default_value' => $config->get('cancel_return'),
-      '#required' => TRUE,
     ];
 
     $documentationLink = Link::fromTextAndUrl('PayPal locale codes', Url::fromUri('//developer.paypal.com/docs/classic/api/locale_codes/#supported-locale-codes', $linkAttributes));
