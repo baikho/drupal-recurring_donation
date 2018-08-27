@@ -141,6 +141,7 @@ class SettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('recurring_donation.settings');
+    $linkAttributes = ['attributes' => ['target' => '_blank']];
 
     $form['env'] = [
       '#type' => 'select',
@@ -176,6 +177,16 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
+    $documentationLink = Link::fromTextAndUrl('PayPal locale codes', Url::fromUri('//developer.paypal.com/docs/classic/api/locale_codes/#supported-locale-codes', $linkAttributes));
+
+    $form['locale_code'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Locale code'),
+      '#description' => $this->t('Locale of the checkout page. See the @link reference page.', ['@link' => $documentationLink->toString()]),
+      '#default_value' => $config->get('locale_code'),
+      '#size' => 5,
+    ];
+
     $form['options'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Predefined amounts'),
@@ -207,7 +218,7 @@ class SettingsForm extends ConfigFormBase {
       '#states' => $this->customAmountFormStates(),
     ];
 
-    $documentationLink = Link::fromTextAndUrl('Currencies Supported by PayPal', Url::fromUri('//developer.paypal.com/docs/classic/api/currency_codes/#paypal'));
+    $documentationLink = Link::fromTextAndUrl('Currencies Supported by PayPal', Url::fromUri('//developer.paypal.com/docs/classic/api/currency_codes/#paypal', $linkAttributes));
 
     $form['currency_code'] = [
       '#type' => 'textfield',
@@ -321,6 +332,7 @@ class SettingsForm extends ConfigFormBase {
     $config
       ->set('env', $form_state->getValue('env'))
       ->set('receiver', $form_state->getValue('receiver'))
+      ->set('locale_code', $form_state->getValue('locale_code'))
       ->set('options', $form_state->getValue('options'))
       ->set('custom', $form_state->getValue('custom'))
       ->set('custom_min', $form_state->getValue('custom_min'))

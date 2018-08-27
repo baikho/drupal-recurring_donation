@@ -40,6 +40,11 @@ class DonationForm extends FormBase {
       '#default_value' => $donationType === DonationTypes::RECURRING ? '_xclick-subscriptions' : '_donations',
     ];
 
+    $form['lc'] = [
+      '#type' => 'hidden',
+      '#default_value' => $config->get('locale_code'),
+    ];
+
     $form['no_note'] = [
       '#type' => 'hidden',
       '#default_value' => $donationType === DonationTypes::RECURRING,
