@@ -6,6 +6,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\recurring_donation\DonationTypes;
+use Drupal\recurring_donation\InvalidDonationTypeException;
 
 /**
  * Class DonationForm.
@@ -25,6 +26,10 @@ class DonationForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $donationType = DonationTypes::SINGLE) {
+
+    if (!in_array($donationType, DonationTypes::getTypes(), FALSE)) {
+      throw new InvalidDonationTypeException('Invalid donation type.');
+    }
 
     $config = $this->config('recurring_donation.settings');
 
