@@ -96,7 +96,7 @@ class DonationForm extends FormBase {
 
         $form[$donationType . '_amount'] = [
           '#title' => $this->t('Amount'),
-          '#type' => 'radios',
+          '#type' => $config->get('options_style'),
           '#options' => $options,
           '#required' => TRUE,
           '#attributes' => [

@@ -192,6 +192,16 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('options'),
     ];
 
+    $form['options_style'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Input style'),
+      '#options' => [
+        'radios' => 'radios',
+        'select' => 'select',
+      ],
+      '#default_value' => $config->get('options_style') ?: 'radios',
+    ];
+
     $form['custom'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow custom amount'),
@@ -330,6 +340,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('receiver', $form_state->getValue('receiver'))
       ->set('locale_code', $form_state->getValue('locale_code'))
       ->set('options', $form_state->getValue('options'))
+      ->set('options_style', $form_state->getValue('options_style'))
       ->set('custom', $form_state->getValue('custom'))
       ->set('custom_min', $form_state->getValue('custom_min'))
       ->set('custom_max', $form_state->getValue('custom_max'))
