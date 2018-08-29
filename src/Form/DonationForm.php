@@ -62,7 +62,7 @@ class DonationForm extends FormBase {
 
     $form['no_note'] = [
       '#type' => 'hidden',
-      '#default_value' => $donationType === DonationTypes::RECURRING,
+      '#default_value' => $donationType === DonationTypes::RECURRING ? 1 : 0,
     ];
 
     $form['business'] = [
@@ -135,6 +135,12 @@ class DonationForm extends FormBase {
     }
 
     if ($donationType === DonationTypes::RECURRING) {
+      // Set subscriptions to recur.
+      $form['src'] = [
+        '#type' => 'hidden',
+        '#default_value' => 1,
+      ];
+
       // Regular subscription price.
       $form['a3'] = [
         '#type' => 'hidden',
