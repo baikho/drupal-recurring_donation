@@ -31,6 +31,7 @@ class DonationForm extends FormBase {
       throw new InvalidDonationTypeException('Invalid donation type.');
     }
 
+    $baseUrl = $this->getRequest()->getSchemeAndHttpHost();
     $config = $this->config('recurring_donation.settings');
 
     $form['title'] = [
@@ -50,15 +51,19 @@ class DonationForm extends FormBase {
       '#default_value' => $config->get('locale_code'),
     ];
 
-    $form['return'] = [
-      '#type' => 'hidden',
-      '#default_value' => $config->get('return'),
-    ];
+    if (!empty($config->get('return_path'))) {
+      $form['return'] = [
+        '#type' => 'hidden',
+        '#default_value' => $baseUrl . $config->get('return_path'),
+      ];
+    }
 
-    $form['cancel_return'] = [
-      '#type' => 'hidden',
-      '#default_value' => $config->get('cancel_return'),
-    ];
+    if (!empty($config->get('cancel_path'))) {
+      $form['cancel_return'] = [
+        '#type' => 'hidden',
+        '#default_value' => $baseUrl . $config->get('cancel_path'),
+      ];
+    }
 
     $form['no_note'] = [
       '#type' => 'hidden',

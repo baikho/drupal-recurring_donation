@@ -161,18 +161,18 @@ class SettingsForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
-    $form['return'] = [
+    $form['return_path'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Return URL'),
-      '#description' => $this->t('The return URL upon successful payment'),
-      '#default_value' => $config->get('return'),
+      '#description' => $this->t('The return path for a successful payment'),
+      '#default_value' => $config->get('return_path'),
     ];
 
-    $form['cancel_return'] = [
+    $form['cancel_path'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Cancel return URL'),
-      '#description' => $this->t('The return URL upon cancelled payment'),
-      '#default_value' => $config->get('cancel_return'),
+      '#description' => $this->t('The return path for a cancelled payment'),
+      '#default_value' => $config->get('cancel_path'),
     ];
 
     $documentationLink = Link::fromTextAndUrl('PayPal locale codes', Url::fromUri('//developer.paypal.com/docs/classic/api/locale_codes/#supported-locale-codes', $linkAttributes));
@@ -320,6 +320,13 @@ class SettingsForm extends ConfigFormBase {
         '%email' => $values['receiver'],
       ]));
     }
+    foreach (['return_path', 'cancel_path'] as $path) {
+      if (($value = $form_state->getValue($path)) && $value[0] !== '/') {
+        $form_state->setErrorByName($path, $this->t("The path '%path' has to start with a slash.", [
+          '%path' => $form_state->getValue($path),
+        ]));
+      }
+    }
     if (!$values['options'] && !$values['custom']) {
       $form_state->setErrorByName('options', $this->t('Specify at least 1 predefined amount or allow custom amount.'));
       $form_state->setErrorByName('custom');
@@ -344,8 +351,8 @@ class SettingsForm extends ConfigFormBase {
       ->set('custom', $form_state->getValue('custom'))
       ->set('custom_min', $form_state->getValue('custom_min'))
       ->set('custom_max', $form_state->getValue('custom_max'))
-      ->set('return', $form_state->getValue('return'))
-      ->set('cancel_return', $form_state->getValue('cancel_return'))
+      ->set('return_path', $form_state->getValue('return_path'))
+      ->set('cancel_path', $form_state->getValue('cancel_path'))
       ->set('currency_code', $form_state->getValue('currency_code'))
       ->set('currency_sign', $form_state->getValue('currency_sign'))
       ->set('button', $form_state->getValue('donate_button_text'));
