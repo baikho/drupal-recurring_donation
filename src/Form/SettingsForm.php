@@ -143,14 +143,14 @@ class SettingsForm extends ConfigFormBase {
     $config = $this->config('recurring_donation.settings');
     $linkAttributes = ['attributes' => ['target' => '_blank']];
 
-    $form['env'] = [
+    $form['mode'] = [
       '#type' => 'select',
-      '#title' => $this->t('Environment'),
+      '#title' => $this->t('Mode'),
       '#options' => [
         0 => $this->t('sandbox'),
-        1 => $this->t('production'),
+        1 => $this->t('live'),
       ],
-      '#default_value' => $config->get('env') ?: 0,
+      '#default_value' => $config->get('mode') ?: 0,
     ];
 
     $form['receiver'] = [
@@ -336,7 +336,7 @@ class SettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('recurring_donation.settings');
     $config
-      ->set('env', $form_state->getValue('env'))
+      ->set('mode', $form_state->getValue('mode'))
       ->set('receiver', $form_state->getValue('receiver'))
       ->set('locale_code', $form_state->getValue('locale_code'))
       ->set('options', $form_state->getValue('options'))

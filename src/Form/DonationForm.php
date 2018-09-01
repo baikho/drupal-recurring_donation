@@ -140,7 +140,6 @@ class DonationForm extends FormBase {
         '#type' => 'hidden',
         '#default_value' => 1,
       ];
-
       // Regular subscription price.
       $form['a3'] = [
         '#type' => 'hidden',
@@ -165,8 +164,8 @@ class DonationForm extends FormBase {
       ],
     ];
 
-    $env = (bool) $config->get('env') !== TRUE ? 'sandbox.' : '';
-    $url = 'https://www.' . $env . 'paypal.com/cgi-bin/webscr';
+    $mode = (bool) $config->get('mode') !== TRUE ? 'sandbox.' : '';
+    $url = 'https://www.' . $mode . 'paypal.com/cgi-bin/webscr';
     $form['#action'] = Url::fromUri($url, ['external' => TRUE])->toString();
 
     $form['#attached'] = [
