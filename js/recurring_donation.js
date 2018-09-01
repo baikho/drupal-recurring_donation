@@ -9,7 +9,7 @@
       var selectedVal;
 
       if ($(this).hasClass('donation-custom-amount')){
-        selectedVal = $('input[name="custom"]', $parentForm).val();
+        selectedVal = $('input[name="custom_amount"]', $parentForm).val();
       }
       else if ($(this).is('select')) {
         selectedVal = $('select[name="' + donationType + '_amount"]', $parentForm).val();
@@ -19,7 +19,7 @@
       }
 
       if (selectedVal === 'other') {
-        selectedVal = $('input[name="custom"]', $parentForm).val();
+        selectedVal = $('input[name="custom_amount"]', $parentForm).val();
       }
       switch (donationType) {
         case 'single':

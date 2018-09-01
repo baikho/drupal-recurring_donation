@@ -114,7 +114,7 @@ class DonationForm extends FormBase {
         ];
       }
 
-      $form['custom'] = [
+      $form['custom_amount'] = [
         '#title' => $this->t('Custom amount'),
         '#field_prefix' => $config->get('currency_sign'),
         '#type' => 'number',
@@ -138,6 +138,11 @@ class DonationForm extends FormBase {
         ],
       ];
     }
+
+    $form['custom'] = [
+      '#type' => 'hidden',
+      '#default_value' => $config->get('variable'),
+    ];
 
     if ($donationType === DonationTypes::RECURRING) {
       // Set subscriptions to recur.

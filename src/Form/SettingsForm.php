@@ -249,6 +249,13 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('button'),
     ];
 
+    $form['variable'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Custom variable'),
+      '#description' => $this->t('Pass-through variable for your own tracking purposes, which buyers do not see.'),
+      '#default_value' => $config->get('variable'),
+    ];
+
     foreach (DonationTypes::getTypes() as $key => $donationType) {
 
       $form[$key] = [
@@ -355,7 +362,8 @@ class SettingsForm extends ConfigFormBase {
       ->set('cancel_path', $form_state->getValue('cancel_path'))
       ->set('currency_code', $form_state->getValue('currency_code'))
       ->set('currency_sign', $form_state->getValue('currency_sign'))
-      ->set('button', $form_state->getValue('donate_button_text'));
+      ->set('button', $form_state->getValue('donate_button_text'))
+      ->set('variable', $form_state->getValue('variable'));
 
     foreach (DonationTypes::getTypes() as $donationType) {
       $config
