@@ -1,0 +1,16 @@
+{
+    "name": "drupal/recurring_donation",
+    "type": "drupal-module",
+    "description": "Provides a PayPal block with donation forms.",
+    "homepage": "https://drupal.org/project/recurring_donation",
+    "keywords": ["Drupal", "PayPal", "Donation"],
+    "license": "GPL-2.0+",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/recurring_donation",
+        "source": "https://cgit.drupalcode.org/recurring_donation"
+    },
+    "require": {
+        "paypal/sdk-core-php": "^3.4"
+    }
+}

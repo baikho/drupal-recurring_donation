@@ -5,3 +5,18 @@ recurring_donation.configure:
     _title: 'Recurring PayPal donations'
   requirements:
     _permission: 'administer recurring paypal donations'
+recurring_donation.configure.ipn:
+  path: '/admin/config/services/recurring-paypal-donations/ipn'
+  defaults:
+    _form: '\Drupal\recurring_donation\Form\IPNSettingsForm'
+    _title: 'Instant Payment Notifications'
+  requirements:
+    _permission: 'administer recurring paypal donations'
+recurring_donation.ipn:
+  path: '/paypal/payment/ipn'
+  defaults:
+    _controller: '\Drupal\recurring_donation\Controller\IPNController::listen'
+    _title: 'Instant Payment Notification'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'

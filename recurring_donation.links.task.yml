@@ -1,0 +1,8 @@
+recurring_donation.settings:
+  route_name: recurring_donation.configure
+  title: 'Settings'
+  base_route: recurring_donation.configure
+recurring_donation.ipn:
+  route_name: recurring_donation.configure.ipn
+  title: 'IPN'
+  base_route: recurring_donation.configure

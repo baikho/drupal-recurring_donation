@@ -1,0 +1,6 @@
+services:
+  recurring_donation.ipn_route_subscriber:
+    class: Drupal\recurring_donation\EventSubscriber\IPNRouteSubscriber
+    arguments: ['@config.factory']
+    tags:
+      - { name: event_subscriber }
