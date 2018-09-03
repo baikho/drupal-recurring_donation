@@ -2,14 +2,18 @@ recurring_donation.settings:
   type: config_object
   label: 'Recurring PayPal donations'
   mapping:
-    label:
+    single:
       type: mapping
-      label: 'Donation types'
+      label: 'Single donation type'
       mapping:
-        single:
+        label:
           type: label
           label: 'Single donation label'
-        recurring:
+    recurring:
+      type: mapping
+      label: 'Recurring donation types'
+      mapping:
+        label:
           type: label
           label: 'Recurring donation label'
     button:
