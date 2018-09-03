@@ -1,6 +1,11 @@
-label:
-  single: 'Make a one-time donation'
-  recurring: 'Make a recurring donation'
+mode: '0'
+options: '5.00, 50.00, 100.00'
+currency_code: USD
+currency_sign: $
 button: 'Donate now'
+single:
+  label: 'Make a one time donation'
+recurring:
+  label: 'Make a recurring donation'
 langcode: en
 default_langcode: en
