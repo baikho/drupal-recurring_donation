@@ -87,9 +87,9 @@ class IPNSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this
       ->config('recurring_donation.settings')
-      ->set('ipn.enabled', $form_state->getValue('ipn_enabled'))
+      ->set('ipn.enabled', (bool) $form_state->getValue('ipn_enabled'))
       ->set('ipn.path', $form_state->getValue('ipn_path'))
-      ->set('ipn.logging', $form_state->getValue('ipn_logging'))
+      ->set('ipn.logging', (bool) $form_state->getValue('ipn_logging'))
       ->save();
     parent::submitForm($form, $form_state);
   }

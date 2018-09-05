@@ -166,7 +166,7 @@ class DonationForm extends FormBase {
       ];
     }
 
-    if ((bool) $config->get('ipn.enabled') !== FALSE) {
+    if ($config->get('ipn.enabled') !== FALSE) {
       $ipnPath = $config->get('ipn.path');
       $notifyUrl = !empty($ipnPath) ? $baseUrl . $config->get('ipn.path') : Url::fromRoute('recurring_donation.ipn')->toString();
       $form['notify_url'] = [
@@ -183,7 +183,7 @@ class DonationForm extends FormBase {
       ],
     ];
 
-    $mode = (bool) $config->get('mode') !== TRUE ? 'sandbox.' : '';
+    $mode = $config->get('mode') === 'live' ? '' : 'sandbox.';
     $url = 'https://www.' . $mode . 'paypal.com/cgi-bin/webscr';
     $form['#action'] = Url::fromUri($url, ['external' => TRUE])->toString();
 

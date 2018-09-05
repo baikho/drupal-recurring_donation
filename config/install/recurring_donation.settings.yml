@@ -1,4 +1,4 @@
-mode: '0'
+mode: sandbox
 options: '5.00, 50.00, 100.00'
 currency_code: USD
 currency_sign: $

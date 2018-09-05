@@ -52,12 +52,12 @@ class IPNController extends ControllerBase {
 
     // Get current mode.
     $config = $this->config('recurring_donation.settings');
-    $mode = (bool) $config->get('mode') !== TRUE ? 'sandbox' : 'live';
+    $mode = $config->get('mode') === 'live' ? 'live' : 'sandbox';
 
     // Build IPN Message from POST data.
     $ipnMessage = new PPIPNMessage(NULL, compact('mode'));
 
-    if ((bool) $config->get('ipn.logging') === TRUE) {
+    if ($config->get('ipn.logging') === TRUE) {
       $logMessage = 'IPN:<br/>' . PHP_EOL;
       foreach ($ipnMessage->getRawData() as $key => $value) {
         $logMessage .= $this->t('@key => @value', ['@key' => $key, '@value' => $value]) . '<br/>' . PHP_EOL;

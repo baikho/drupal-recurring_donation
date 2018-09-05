@@ -147,10 +147,10 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'select',
       '#title' => $this->t('Mode'),
       '#options' => [
-        0 => $this->t('sandbox'),
-        1 => $this->t('live'),
+        'sandbox' => $this->t('sandbox'),
+        'live' => $this->t('live'),
       ],
-      '#default_value' => $config->get('mode') ?: 0,
+      '#default_value' => $config->get('mode') === 'live' ? 'live' : 'sandbox',
     ];
 
     $form['receiver'] = [
@@ -196,8 +196,8 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'select',
       '#title' => $this->t('Input style'),
       '#options' => [
-        'radios' => 'radios',
-        'select' => 'select',
+        'radios' => $this->t('radios'),
+        'select' => $this->t('select'),
       ],
       '#default_value' => $config->get('options_style') ?: 'radios',
     ];
@@ -355,7 +355,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('locale_code', $form_state->getValue('locale_code'))
       ->set('options', $form_state->getValue('options'))
       ->set('options_style', $form_state->getValue('options_style'))
-      ->set('custom', $form_state->getValue('custom'))
+      ->set('custom', (bool) $form_state->getValue('custom'))
       ->set('custom_min', $form_state->getValue('custom_min'))
       ->set('custom_max', $form_state->getValue('custom_max'))
       ->set('return_path', $form_state->getValue('return_path'))
@@ -367,7 +367,7 @@ class SettingsForm extends ConfigFormBase {
 
     foreach (DonationTypes::getTypes() as $donationType) {
       $config
-        ->set($donationType . '.enabled', $form_state->getValue($donationType . '_enabled'))
+        ->set($donationType . '.enabled', (bool) $form_state->getValue($donationType . '_enabled'))
         ->set($donationType . '.label', $form_state->getValue($donationType . '_label'));
       // Recurring donation type config.
       if ($donationType === DonationTypes::RECURRING) {

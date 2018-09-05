@@ -39,8 +39,7 @@ class IPNRouteSubscriber extends RouteSubscriberBase {
   protected function alterRoutes(RouteCollection $collection) {
     if ($route = $collection->get('recurring_donation.ipn')) {
       $config = $this->configFactory->get('recurring_donation.settings');
-      $ipnEnabled = (bool) $config->get('ipn.enabled');
-      if ($ipnEnabled) {
+      if ($config->get('ipn.enabled') === TRUE) {
         $ipnPath = $config->get('ipn.path');
         // Override the default path for the IPN Listener if specified.
         if (!empty($ipnPath)) {
