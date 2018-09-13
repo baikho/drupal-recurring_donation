@@ -129,6 +129,7 @@ class DonationForm extends FormBase {
             ':input[name="' . $donationType . '_amount"]' => ['value' => 'other'],
           ],
         ],
+        '#required' => TRUE,
         '#attributes' => [
           'class' => [
             // Add classes in favor of JS.
