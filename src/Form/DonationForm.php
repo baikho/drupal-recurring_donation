@@ -87,58 +87,55 @@ class DonationForm extends FormBase {
     $amounts = array_filter(explode(',', str_replace(' ', '', $config->get('options'))));
     $custom = $config->get('custom');
 
-    if (!empty($amounts) || $custom) {
-
-      if (!empty($amounts)) {
-        $options = [];
-        foreach ($amounts as $amount) {
-          $options[$amount] = $config->get('currency_sign') . ' ' . $amount;
-        }
-
-        if ($custom) {
-          $options['other'] = $this->t('Other');
-        }
-
-        $form[$donationType . '_amount'] = [
-          '#title' => $this->t('Amount'),
-          '#type' => $config->get('options_style'),
-          '#options' => $options,
-          '#required' => TRUE,
-          '#attributes' => [
-            'class' => [
-              // Add classes in favor of JS.
-              $donationType,
-              'donation-amount-choice',
-            ],
-          ],
-        ];
+    if (!empty($amounts)) {
+      $options = [];
+      foreach ($amounts as $amount) {
+        $options[$amount] = $config->get('currency_sign') . ' ' . $amount;
       }
 
-      $form['custom_amount'] = [
-        '#title' => $this->t('Custom amount'),
-        '#field_prefix' => $config->get('currency_sign'),
-        '#type' => 'number',
-        '#step' => 0.01,
-        '#min' => $config->get('custom_min') ?: 0.01,
-        '#max' => $config->get('custom_max') ?: NULL,
-        '#states' => [
-          'visible' => [
-            ':input[name="' . $donationType . '_amount"]' => ['value' => 'other'],
-          ],
-          'required' => [
-            ':input[name="' . $donationType . '_amount"]' => ['value' => 'other'],
-          ],
-        ],
+      if ($custom) {
+        $options['other'] = $this->t('Other');
+      }
+
+      $form[$donationType . '_amount'] = [
+        '#title' => $this->t('Amount'),
+        '#type' => $config->get('options_style'),
+        '#options' => $options,
         '#required' => TRUE,
         '#attributes' => [
           'class' => [
             // Add classes in favor of JS.
             $donationType,
-            'donation-custom-amount',
+            'donation-amount-choice',
           ],
         ],
       ];
     }
+
+    $form['custom_amount'] = [
+      '#title' => $this->t('Custom amount'),
+      '#field_prefix' => $config->get('currency_sign'),
+      '#type' => 'number',
+      '#step' => 0.01,
+      '#min' => $config->get('custom_min') ?: 0.01,
+      '#max' => $config->get('custom_max') ?: NULL,
+      '#states' => [
+        'visible' => [
+          ':input[name="' . $donationType . '_amount"]' => ['value' => 'other'],
+        ],
+        'required' => [
+          ':input[name="' . $donationType . '_amount"]' => ['value' => 'other'],
+        ],
+      ],
+      '#required' => TRUE,
+      '#attributes' => [
+        'class' => [
+          // Add classes in favor of JS.
+          $donationType,
+          'donation-custom-amount',
+        ],
+      ],
+    ];
 
     $form['custom'] = [
       '#type' => 'hidden',
@@ -181,6 +178,11 @@ class DonationForm extends FormBase {
       'submit' => [
         '#type' => 'submit',
         '#value' => $config->get('button'),
+      ],
+      '#states' => [
+        'visible' => [
+          ':input[name="' . $donationType . '_amount"]' => ['checked' => TRUE],
+        ],
       ],
     ];
 
