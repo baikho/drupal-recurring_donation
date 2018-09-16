@@ -113,7 +113,7 @@ class DonationForm extends FormBase {
     }
 
     $form['custom_amount'] = [
-      '#title' => $this->t('Custom amount'),
+      '#title' => $config->get('custom_label') ?: $this->t('Custom amount'),
       '#field_prefix' => $config->get('currency_sign'),
       '#type' => 'number',
       '#step' => 0.01,

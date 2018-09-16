@@ -19,3 +19,6 @@ recurring_donation.settings:
     button:
       type: label
       label: 'Donate button text'
+    custom_label:
+      type: label
+      label: 'Custom amount label'

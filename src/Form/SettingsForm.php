@@ -208,6 +208,13 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('custom'),
     ];
 
+    $form['custom_label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Custom amount label'),
+      '#default_value' => $config->get('custom_label'),
+      '#states' => $this->customAmountFormStates(),
+    ];
+
     $form['custom_min'] = [
       '#type' => 'number',
       '#title' => $this->t('Minimum custom amount'),
@@ -356,6 +363,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('options', $form_state->getValue('options'))
       ->set('options_style', $form_state->getValue('options_style'))
       ->set('custom', (bool) $form_state->getValue('custom'))
+      ->set('custom_label', $form_state->getValue('custom_label'))
       ->set('custom_min', $form_state->getValue('custom_min'))
       ->set('custom_max', $form_state->getValue('custom_max'))
       ->set('return_path', $form_state->getValue('return_path'))

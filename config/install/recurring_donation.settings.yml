@@ -3,6 +3,7 @@ options: '5.00, 50.00, 100.00'
 currency_code: USD
 currency_sign: $
 button: 'Donate now'
+custom_label: 'Custom amount'
 single:
   label: 'Make a one time donation'
 recurring:
