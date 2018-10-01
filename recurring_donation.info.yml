@@ -1,4 +1,4 @@
-name: 'Recurring PayPal donations'
+name: 'Recurring PayPal Donations'
 type: module
 description: 'Provides a PayPal block with donation forms.'
 core: '8.x'
