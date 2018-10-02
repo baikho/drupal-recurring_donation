@@ -45,8 +45,9 @@ class IPNSettingsForm extends ConfigFormBase {
     $form['ipn_path'] = [
       '#type' => 'textfield',
       '#title' => $this->t('IPN Listener'),
-      '#description' => $this->t('IPN Listener path for PayPal IPN messages.'),
+      '#description' => $this->t('IPN Listener path for PayPal IPN messages. Defaults to "/paypal/payment/ipn" if left bank.'),
       '#default_value' => $config->get('ipn.path'),
+      '#placeholder' => '/paypal/payment/ipn',
       '#states' => [
         'visible' => [
           ':input[name="ipn_enabled"]' => ['checked' => TRUE],

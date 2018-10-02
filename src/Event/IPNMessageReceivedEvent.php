@@ -12,8 +12,6 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class IPNMessageReceivedEvent extends Event {
 
-  const EVENT_NAME = 'ipn_message_received';
-
   /**
    * The IPN message.
    *
@@ -23,23 +21,13 @@ class IPNMessageReceivedEvent extends Event {
   protected $ipnMessage;
 
   /**
-   * Valid or invalid data.
-   *
-   * @var bool
-   */
-  protected $valid;
-
-  /**
    * Constructs a new IPNMessageEvent.
    *
    * @param \PayPal\IPN\PPIPNMessage $ipnMessage
    *   The IPN message.
-   * @param bool $valid
-   *   TRUE or FALSE.
    */
-  public function __construct(PPIPNMessage $ipnMessage, $valid) {
+  public function __construct(PPIPNMessage $ipnMessage) {
     $this->ipnMessage = $ipnMessage;
-    $this->valid = $valid;
   }
 
   /**
@@ -50,16 +38,6 @@ class IPNMessageReceivedEvent extends Event {
    */
   public function getIpnMessage() {
     return $this->ipnMessage;
-  }
-
-  /**
-   * Gets the IPN message.
-   *
-   * @return bool
-   *   TRUE or FALSE.
-   */
-  public function ipnMessageIsValid() {
-    return $this->valid;
   }
 
 }

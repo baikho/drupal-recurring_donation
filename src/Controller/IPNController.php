@@ -3,6 +3,7 @@
 namespace Drupal\recurring_donation\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\recurring_donation\Event\IPNMessageEvents;
 use Drupal\recurring_donation\Event\IPNMessageReceivedEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,10 +53,15 @@ class IPNController extends ControllerBase {
 
     // Get current mode.
     $config = $this->config('recurring_donation.settings');
-    $mode = $config->get('mode') === 'live' ? 'live' : 'sandbox';
+
+    if ($config->get('ipn.enabled') !== TRUE) {
+      return new Response('', 401);
+    }
 
     // Build IPN Message from POST data.
+    $mode = $config->get('mode') === 'live' ? 'live' : 'sandbox';
     $ipnMessage = new PPIPNMessage(NULL, compact('mode'));
+    $event = new IPNMessageReceivedEvent($ipnMessage);
 
     if ($config->get('ipn.logging') === TRUE) {
       $logMessage = 'IPN:<br/>' . PHP_EOL;
@@ -65,19 +71,17 @@ class IPNController extends ControllerBase {
       $this->getLogger('recurring_donation')->info($logMessage);
     }
 
+    // Validate & fire IPN message received event.
     if ($ipnMessage->validate()) {
       $responseMessage = 'Got valid IPN data';
-      $this->getLogger('recurring_donation')->info($responseMessage);
-      $event = new IPNMessageReceivedEvent($ipnMessage, TRUE);
+      $this->getLogger('recurring_donation')->notice($responseMessage);
+      $this->eventDispatcher->dispatch(IPNMessageEvents::VALID, $event);
     }
     else {
       $responseMessage = 'Got invalid IPN data';
       $this->getLogger('recurring_donation')->error($responseMessage);
-      $event = new IPNMessageReceivedEvent($ipnMessage, FALSE);
+      $this->eventDispatcher->dispatch(IPNMessageEvents::INVALID, $event);
     }
-
-    // Fire IPN message received event.
-    $this->eventDispatcher->dispatch(IPNMessageReceivedEvent::EVENT_NAME, $event);
 
     return new Response($responseMessage, 200);
   }

@@ -7,6 +7,7 @@ The primary features of this module:
 
 - A simple configuration form
 - A custom block embedding a single AND/OR recurring donations form
+- IPN support
 
 ### Installation
 
