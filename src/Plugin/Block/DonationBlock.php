@@ -9,7 +9,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\recurring_donation\Form\DonationForm;
-use Drupal\recurring_donation\DonationTypes;
+use Drupal\recurring_donation\DonationType;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -83,7 +83,7 @@ class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface
   public function build() {
     $build = [];
     $config = $this->configFactory->get('recurring_donation.settings');
-    foreach (DonationTypes::getTypes() as $donationType) {
+    foreach (DonationType::getAll() as $donationType) {
       // Early opt-out if donation type is not enabled.
       if ($config->get($donationType . '.enabled') !== TRUE) {
         continue;

@@ -5,7 +5,7 @@ namespace Drupal\recurring_donation\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\recurring_donation\DonationTypes;
+use Drupal\recurring_donation\DonationType;
 use Drupal\recurring_donation\InvalidDonationTypeException;
 
 /**
@@ -25,9 +25,9 @@ class DonationForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $donationType = DonationTypes::SINGLE) {
+  public function buildForm(array $form, FormStateInterface $form_state, $donationType = DonationType::SINGLE) {
 
-    if (!in_array($donationType, DonationTypes::getTypes(), FALSE)) {
+    if (!in_array($donationType, DonationType::getAll(), FALSE)) {
       throw new InvalidDonationTypeException('Invalid donation type.');
     }
 
@@ -43,7 +43,7 @@ class DonationForm extends FormBase {
 
     $form['cmd'] = [
       '#type' => 'hidden',
-      '#default_value' => $donationType === DonationTypes::RECURRING ? '_xclick-subscriptions' : '_donations',
+      '#default_value' => $donationType === DonationType::RECURRING ? '_xclick-subscriptions' : '_donations',
     ];
 
     $form['lc'] = [
@@ -67,7 +67,7 @@ class DonationForm extends FormBase {
 
     $form['no_note'] = [
       '#type' => 'hidden',
-      '#default_value' => $donationType === DonationTypes::RECURRING ? 1 : 0,
+      '#default_value' => $donationType === DonationType::RECURRING ? 1 : 0,
     ];
 
     $form['business'] = [
@@ -142,7 +142,7 @@ class DonationForm extends FormBase {
       '#default_value' => $config->get('variable'),
     ];
 
-    if ($donationType === DonationTypes::RECURRING) {
+    if ($donationType === DonationType::RECURRING) {
       // Set subscriptions to recur.
       $form['src'] = [
         '#type' => 'hidden',

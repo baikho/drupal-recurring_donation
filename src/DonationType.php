@@ -3,11 +3,11 @@
 namespace Drupal\recurring_donation;
 
 /**
- * Class DonationTypes.
+ * Class DonationType.
  *
  * @package Drupal\recurring_donation
  */
-class DonationTypes {
+class DonationType {
 
   /**
    * One-off donation type.
@@ -22,7 +22,7 @@ class DonationTypes {
   /**
    * {@inheritdoc}
    */
-  public static function getTypes() {
+  public static function getAll() {
     return [
       self::SINGLE,
       self::RECURRING,

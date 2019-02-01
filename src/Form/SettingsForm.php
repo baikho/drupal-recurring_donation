@@ -8,7 +8,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
-use Drupal\recurring_donation\DonationTypes;
+use Drupal\recurring_donation\DonationType;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Egulias\EmailValidator\EmailValidator;
 
@@ -263,7 +263,7 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('variable'),
     ];
 
-    foreach (DonationTypes::getTypes() as $key => $donationType) {
+    foreach (DonationType::getAll() as $key => $donationType) {
 
       $form[$key] = [
         '#type' => 'details',
@@ -284,7 +284,7 @@ class SettingsForm extends ConfigFormBase {
         '#states' => $this->formStates($donationType, ['visible']),
       ];
 
-      if ($donationType === DonationTypes::RECURRING) {
+      if ($donationType === DonationType::RECURRING) {
 
         $form[$key][$donationType . '_enabled']['#description'] = $this->t('This feature is only available to Business and Premier Accounts.');
 
@@ -373,12 +373,12 @@ class SettingsForm extends ConfigFormBase {
       ->set('button', $form_state->getValue('donate_button_text'))
       ->set('variable', $form_state->getValue('variable'));
 
-    foreach (DonationTypes::getTypes() as $donationType) {
+    foreach (DonationType::getAll() as $donationType) {
       $config
         ->set($donationType . '.enabled', (bool) $form_state->getValue($donationType . '_enabled'))
         ->set($donationType . '.label', $form_state->getValue($donationType . '_label'));
       // Recurring donation type config.
-      if ($donationType === DonationTypes::RECURRING) {
+      if ($donationType === DonationType::RECURRING) {
         $config
           ->set($donationType . '.unit', $form_state->getValue($donationType . '_unit'))
           ->set($donationType . '.duration', $form_state->getValue($donationType . '_duration_' . $form_state->getValue($donationType . '_unit')));
