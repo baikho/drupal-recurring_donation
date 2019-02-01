@@ -142,6 +142,7 @@ class SettingsForm extends ConfigFormBase {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('recurring_donation.settings');
     $linkAttributes = ['attributes' => ['target' => '_blank']];
+    $values = $form_state->getValues();
 
     $form['mode'] = [
       '#type' => 'select',
@@ -288,39 +289,44 @@ class SettingsForm extends ConfigFormBase {
 
         $form[$key][$donationType . '_enabled']['#description'] = $this->t('This feature is only available to Business and Premier Accounts.');
 
-        $recurringUnitOptions = $this->recurringUnitOptions();
-
         $form[$key][$donationType . '_unit'] = [
           '#type' => 'select',
           '#title' => $this->t('Recurring unit'),
-          '#options' => $recurringUnitOptions,
-          '#states' => $this->formStates($donationType, ['visible', 'required']),
+          '#options' => $this->recurringUnitOptions(),
           '#default_value' => $config->get($donationType . '.unit'),
+          '#states' => $this->formStates($donationType, ['visible', 'required']),
+          '#ajax' => [
+            'callback' => [$this, 'ajaxCallback'],
+            'wrapper' => 'ajax-container',
+            'effect' => 'fade',
+          ],
         ];
 
-        foreach (array_keys($recurringUnitOptions) as $recurringUnitOption) {
-          // Dependent recurring duration dropdown.
-          $form[$key][$donationType . '_duration_' . $recurringUnitOption] = [
-            '#type' => 'select',
-            '#title' => $this->t('Recurring duration'),
-            '#options' => $this->recurringDurationOptions($recurringUnitOption),
-            '#states' => $this->formStates($donationType, [
-              'visible' => [
-                $donationType . '_unit' => $recurringUnitOption,
-              ],
-              'required' => [
-                $donationType . '_unit' => $recurringUnitOption,
-              ],
-            ]),
-            '#default_value' => $config->get($donationType . '.duration'),
-          ];
-        }
+        // Dependent recurring duration dropdown.
+        $form[$key][$donationType . '_duration'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Recurring duration'),
+          '#options' => !empty($values) && !empty($values[$donationType . '_unit']) ? $this->recurringDurationOptions($values[$donationType . '_unit']) : $this->recurringDurationOptions($config->get($donationType . '.unit')),
+          '#default_value' => $config->get($donationType . '.duration'),
+          '#states' => $this->formStates($donationType, ['visible', 'required']),
+          '#prefix' => '<div id="ajax-container">',
+          '#suffix' => '</div>',
+          '#required' => !empty($values) && !empty($values[$donationType . '_unit']),
+        ];
 
       }
 
     }
 
     return $form;
+  }
+
+  /**
+   * Ajax callback.
+   */
+  public function ajaxCallback(array &$form, FormStateInterface $form_state) {
+    $key = array_search(DonationType::RECURRING, DonationType::getAll());
+    return $form[$key][DonationType::RECURRING . '_duration'];
   }
 
   /**
@@ -381,7 +387,7 @@ class SettingsForm extends ConfigFormBase {
       if ($donationType === DonationType::RECURRING) {
         $config
           ->set($donationType . '.unit', $form_state->getValue($donationType . '_unit'))
-          ->set($donationType . '.duration', $form_state->getValue($donationType . '_duration_' . $form_state->getValue($donationType . '_unit')));
+          ->set($donationType . '.duration', $form_state->getValue($donationType . '_duration'));
       }
     }
 
