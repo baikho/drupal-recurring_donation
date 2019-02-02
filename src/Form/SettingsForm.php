@@ -66,10 +66,11 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function customAmountFormStates() {
+  protected function customAmountFormStates($donationType) {
     return [
       'visible' => [
-        ':input[name="custom"]' => ['checked' => TRUE],
+        ':input[name="' . $donationType . '_enabled"]' => ['checked' => TRUE],
+        ':input[name="' . $donationType . '_custom"]' => ['checked' => TRUE],
       ],
     ];
   }
@@ -186,54 +187,6 @@ class SettingsForm extends ConfigFormBase {
       '#size' => 5,
     ];
 
-    $form['options'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Predefined amounts'),
-      '#description' => $this->t('Enter comma separated values'),
-      '#default_value' => $config->get('options'),
-    ];
-
-    $form['options_style'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Input style'),
-      '#options' => [
-        'radios' => $this->t('radios'),
-        'select' => $this->t('select'),
-      ],
-      '#default_value' => $config->get('options_style') ?: 'radios',
-    ];
-
-    $form['custom'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Allow custom amount'),
-      '#default_value' => $config->get('custom'),
-    ];
-
-    $form['custom_label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Custom amount label'),
-      '#default_value' => $config->get('custom_label'),
-      '#states' => $this->customAmountFormStates(),
-    ];
-
-    $form['custom_min'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Minimum custom amount'),
-      '#step' => 0.01,
-      '#min' => 0,
-      '#default_value' => $config->get('custom_min'),
-      '#states' => $this->customAmountFormStates(),
-    ];
-
-    $form['custom_max'] = [
-      '#type' => 'number',
-      '#title' => $this->t('Maximum custom amount'),
-      '#step' => 0.01,
-      '#min' => 1,
-      '#default_value' => $config->get('custom_max'),
-      '#states' => $this->customAmountFormStates(),
-    ];
-
     $documentationLink = Link::fromTextAndUrl('Currencies Supported by PayPal', Url::fromUri('//developer.paypal.com/docs/classic/api/currency_codes/#paypal', $linkAttributes));
 
     $form['currency_code'] = [
@@ -249,6 +202,16 @@ class SettingsForm extends ConfigFormBase {
       '#title' => $this->t('Currency sign'),
       '#description' => $this->t('The currency sign'),
       '#default_value' => $config->get('currency_sign'),
+    ];
+
+    $form['options_style'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Input style'),
+      '#options' => [
+        'radios' => $this->t('radios'),
+        'select' => $this->t('select'),
+      ],
+      '#default_value' => $config->get('options_style') ?: 'radios',
     ];
 
     $form['donate_button_text'] = [
@@ -283,6 +246,46 @@ class SettingsForm extends ConfigFormBase {
         '#title' => $this->t('@donation_type donation label', ['@donation_type' => Unicode::ucfirst($donationType)]),
         '#default_value' => $config->get($donationType . '.label'),
         '#states' => $this->formStates($donationType, ['visible']),
+      ];
+
+      $form[$key][$donationType . '_options'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Predefined amounts'),
+        '#description' => $this->t('Enter comma separated values'),
+        '#default_value' => $config->get($donationType . '.options'),
+        '#states' => $this->formStates($donationType, ['visible']),
+      ];
+
+      $form[$key][$donationType . '_custom'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Allow custom amount'),
+        '#default_value' => $config->get($donationType . '.custom'),
+        '#states' => $this->formStates($donationType, ['visible']),
+      ];
+
+      $form[$key][$donationType . '_custom_label'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Custom amount label'),
+        '#default_value' => $config->get($donationType . '.custom_label'),
+        '#states' => $this->customAmountFormStates($donationType),
+      ];
+
+      $form[$key][$donationType . '_custom_min'] = [
+        '#type' => 'number',
+        '#title' => $this->t('Minimum custom amount'),
+        '#step' => 0.01,
+        '#min' => 0,
+        '#default_value' => $config->get($donationType . '.custom_min'),
+        '#states' => $this->customAmountFormStates($donationType),
+      ];
+
+      $form[$key][$donationType . '_custom_max'] = [
+        '#type' => 'number',
+        '#title' => $this->t('Maximum custom amount'),
+        '#step' => 0.01,
+        '#min' => 1,
+        '#default_value' => $config->get($donationType . '.custom_max'),
+        '#states' => $this->customAmountFormStates($donationType),
       ];
 
       if ($donationType === DonationType::RECURRING) {
@@ -347,13 +350,15 @@ class SettingsForm extends ConfigFormBase {
         ]));
       }
     }
-    if (!$values['options'] && !$values['custom']) {
-      $form_state->setErrorByName('options', $this->t('Specify at least 1 predefined amount or allow custom amount.'));
-      $form_state->setErrorByName('custom');
-    }
-    if ($values['custom_min'] && $values['custom_max'] && ($values['custom_min'] > $values['custom_max'])) {
-      $form_state->setErrorByName('custom_min', $this->t('Minimum custom amount can not exceed maximum custom amount.'));
-      $form_state->setErrorByName('custom_max');
+    foreach (DonationType::getAll() as $key => $donationType) {
+      if (!$values[$donationType . '_options'] && !$values[$donationType . '_custom']) {
+        $form_state->setErrorByName($donationType . '_options', $this->t('Specify at least 1 predefined amount or allow custom amount.'));
+        $form_state->setErrorByName($donationType . '_custom');
+      }
+      if ($values[$donationType . '_custom_min'] && $values[$donationType . '_custom_max'] && ($values[$donationType . '_custom_min'] > $values[$donationType . '_custom_max'])) {
+        $form_state->setErrorByName($donationType . '_custom_min', $this->t('Minimum custom amount can not exceed maximum custom amount.'));
+        $form_state->setErrorByName($donationType . '_custom_max');
+      }
     }
   }
 
@@ -366,12 +371,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('mode', $form_state->getValue('mode'))
       ->set('receiver', $form_state->getValue('receiver'))
       ->set('locale_code', $form_state->getValue('locale_code'))
-      ->set('options', $form_state->getValue('options'))
       ->set('options_style', $form_state->getValue('options_style'))
-      ->set('custom', (bool) $form_state->getValue('custom'))
-      ->set('custom_label', $form_state->getValue('custom_label'))
-      ->set('custom_min', $form_state->getValue('custom_min'))
-      ->set('custom_max', $form_state->getValue('custom_max'))
       ->set('return_path', $form_state->getValue('return_path'))
       ->set('cancel_path', $form_state->getValue('cancel_path'))
       ->set('currency_code', $form_state->getValue('currency_code'))
@@ -382,7 +382,12 @@ class SettingsForm extends ConfigFormBase {
     foreach (DonationType::getAll() as $donationType) {
       $config
         ->set($donationType . '.enabled', (bool) $form_state->getValue($donationType . '_enabled'))
-        ->set($donationType . '.label', $form_state->getValue($donationType . '_label'));
+        ->set($donationType . '.label', $form_state->getValue($donationType . '_label'))
+        ->set($donationType . '.options', $form_state->getValue($donationType . '_options'))
+        ->set($donationType . '.custom', (bool) $form_state->getValue($donationType . '_custom'))
+        ->set($donationType . '.custom_label', $form_state->getValue($donationType . '_custom_label'))
+        ->set($donationType . '.custom_min', $form_state->getValue($donationType . '_custom_min'))
+        ->set($donationType . '.custom_max', $form_state->getValue($donationType . '_custom_max'));
       // Recurring donation type config.
       if ($donationType === DonationType::RECURRING) {
         $config

@@ -84,8 +84,8 @@ class DonationForm extends FormBase {
       '#type' => 'hidden',
     ];
 
-    $amounts = array_filter(explode(',', str_replace(' ', '', $config->get('options'))));
-    $custom = $config->get('custom');
+    $amounts = array_filter(explode(',', str_replace(' ', '', $config->get($donationType . '.options'))));
+    $custom = $config->get($donationType . '.custom');
 
     if (!empty($amounts)) {
       $options = [];
@@ -113,12 +113,12 @@ class DonationForm extends FormBase {
     }
 
     $form['custom_amount'] = [
-      '#title' => $config->get('custom_label') ?: $this->t('Custom amount'),
+      '#title' => $config->get($donationType . '.custom_label') ?: $this->t('Custom amount'),
       '#field_prefix' => $config->get('currency_sign'),
       '#type' => 'number',
       '#step' => 0.01,
-      '#min' => $config->get('custom_min') ?: 0.01,
-      '#max' => $config->get('custom_max') ?: NULL,
+      '#min' => $config->get($donationType . '.custom_min') ?: 0.01,
+      '#max' => $config->get($donationType . '.custom_max') ?: NULL,
       '#states' => [
         'visible' => [
           ':input[name="' . $donationType . '_amount"]' => ['value' => 'other'],
@@ -192,7 +192,7 @@ class DonationForm extends FormBase {
 
     $form['#attached'] = [
       'library' => [
-        'recurring_donation/recurring-donation',
+        'recurring_donation/recurring_donation',
       ],
     ];
 

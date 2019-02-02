@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * Contains install and update functions for Recurring PayPal Donations.
+ */
+
+use Drupal\recurring_donation\DonationType;
+
+/**
+ * Converts "Amount settings" config to per donation type settings.
+ */
+function recurring_donation_update_8001() {
+  $configHasUpdates = FALSE;
+  $configFactory = \Drupal::configFactory();
+  $config = $configFactory->getEditable('recurring_donation.settings');
+  $settingKeys = [
+    'options',
+    'custom',
+    'custom_label',
+    'custom_min',
+    'custom_max',
+  ];
+
+  foreach ($settingKeys as $settingKey) {
+    if (!empty($settingValues = $config->get($settingKey))) {
+      // Clear old setting.
+      $config->clear($settingKey);
+      // Convert setting to all donation types.
+      foreach (DonationType::getAll() as $donationType) {
+        $config->set("$donationType.$settingKey", $settingValues);
+        $configHasUpdates = TRUE;
+      }
+    }
+  }
+
+  if ($configHasUpdates) {
+    $config->save(TRUE);
+    return t('Amount settings converted.');
+  }
+
+  return t('Amount settings conversion skipped, no updates required.');
+}
