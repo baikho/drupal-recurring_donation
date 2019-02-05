@@ -9,6 +9,9 @@ recurring_donation.settings:
         label:
           type: label
           label: 'Single donation label'
+        custom_label:
+          type: label
+          label: 'Custom amount label'
     recurring:
       type: mapping
       label: 'Recurring donation types'
@@ -16,9 +19,9 @@ recurring_donation.settings:
         label:
           type: label
           label: 'Recurring donation label'
+        custom_label:
+          type: label
+          label: 'Custom amount label'
     button:
       type: label
       label: 'Donate button text'
-    custom_label:
-      type: label
-      label: 'Custom amount label'

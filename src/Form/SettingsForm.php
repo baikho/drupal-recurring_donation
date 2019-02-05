@@ -351,6 +351,9 @@ class SettingsForm extends ConfigFormBase {
       }
     }
     foreach (DonationType::getAll() as $key => $donationType) {
+      if (!$values[$donationType . '_enabled']) {
+        continue;
+      }
       if (!$values[$donationType . '_options'] && !$values[$donationType . '_custom']) {
         $form_state->setErrorByName($donationType . '_options', $this->t('Specify at least 1 predefined amount or allow custom amount.'));
         $form_state->setErrorByName($donationType . '_custom');

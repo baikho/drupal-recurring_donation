@@ -24,12 +24,12 @@ function recurring_donation_update_8001() {
 
   foreach ($settingKeys as $settingKey) {
     if (!empty($settingValues = $config->get($settingKey))) {
+      $configHasUpdates = TRUE;
       // Clear old setting.
       $config->clear($settingKey);
       // Convert setting to all donation types.
       foreach (DonationType::getAll() as $donationType) {
         $config->set("$donationType.$settingKey", $settingValues);
-        $configHasUpdates = TRUE;
       }
     }
   }

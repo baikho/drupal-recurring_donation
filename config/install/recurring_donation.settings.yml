@@ -1,12 +1,17 @@
 mode: sandbox
-options: '5.00, 50.00, 100.00'
 currency_code: USD
 currency_sign: $
 button: 'Donate now'
-custom_label: 'Custom amount'
 single:
   label: 'Make a one time donation'
+  options: '5.00, 50.00, 100.00'
+  custom_label: 'Custom amount'
 recurring:
   label: 'Make a recurring donation'
+  options: '5.00, 50.00, 100.00'
+  custom_label: 'Custom amount'
 langcode: en
 default_langcode: en
+notify:
+  donor:
+    subject: 'Thank you for your donation at [site:name]'
