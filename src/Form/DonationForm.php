@@ -34,53 +34,55 @@ class DonationForm extends FormBase {
     $baseUrl = $this->getRequest()->getSchemeAndHttpHost();
     $config = $this->config('recurring_donation.settings');
 
-    $form['title'] = [
-      '#type' => 'markup',
-      '#prefix' => '<h3 class="donation-title">',
-      '#markup' => $config->get($donationType . '.label'),
-      '#suffix' => '</h3>',
+    $form[$donationType] = [
+      '#type' => 'container',
+      '#states' => [
+        'visible' => [
+          ':input[name="' . DonationTypeSelectionForm::DONATION_TYPE_FIELD . '"]' => ['value' => $donationType],
+        ],
+      ],
     ];
 
-    $form['cmd'] = [
+    $form[$donationType]['cmd'] = [
       '#type' => 'hidden',
       '#default_value' => $donationType === DonationType::RECURRING ? '_xclick-subscriptions' : '_donations',
     ];
 
-    $form['lc'] = [
+    $form[$donationType]['lc'] = [
       '#type' => 'hidden',
       '#default_value' => $config->get('locale_code'),
     ];
 
     if (!empty($config->get('return_path'))) {
-      $form['return'] = [
+      $form[$donationType]['return'] = [
         '#type' => 'hidden',
         '#default_value' => $baseUrl . $config->get('return_path'),
       ];
     }
 
     if (!empty($config->get('cancel_path'))) {
-      $form['cancel_return'] = [
+      $form[$donationType]['cancel_return'] = [
         '#type' => 'hidden',
         '#default_value' => $baseUrl . $config->get('cancel_path'),
       ];
     }
 
-    $form['no_note'] = [
+    $form[$donationType]['no_note'] = [
       '#type' => 'hidden',
       '#default_value' => $donationType === DonationType::RECURRING ? 1 : 0,
     ];
 
-    $form['business'] = [
+    $form[$donationType]['business'] = [
       '#type' => 'hidden',
       '#default_value' => $config->get('receiver'),
     ];
 
-    $form['currency_code'] = [
+    $form[$donationType]['currency_code'] = [
       '#type' => 'hidden',
       '#default_value' => $config->get('currency_code'),
     ];
 
-    $form['amount'] = [
+    $form[$donationType]['amount'] = [
       '#type' => 'hidden',
     ];
 
@@ -97,7 +99,7 @@ class DonationForm extends FormBase {
         $options['other'] = $this->t('Other');
       }
 
-      $form[$donationType . '_amount'] = [
+      $form[$donationType][$donationType . '_amount'] = [
         '#title' => $this->t('Amount'),
         '#type' => $config->get('options_style'),
         '#options' => $options,
@@ -112,7 +114,7 @@ class DonationForm extends FormBase {
       ];
     }
 
-    $form['custom_amount'] = [
+    $form[$donationType]['custom_amount'] = [
       '#title' => $config->get($donationType . '.custom_label') ?: $this->t('Custom amount'),
       '#field_prefix' => $config->get('currency_sign'),
       '#type' => 'number',
@@ -137,28 +139,28 @@ class DonationForm extends FormBase {
       ],
     ];
 
-    $form['custom'] = [
+    $form[$donationType]['custom'] = [
       '#type' => 'hidden',
       '#default_value' => $config->get('variable'),
     ];
 
     if ($donationType === DonationType::RECURRING) {
       // Set subscriptions to recur.
-      $form['src'] = [
+      $form[$donationType]['src'] = [
         '#type' => 'hidden',
         '#default_value' => 1,
       ];
       // Regular subscription price.
-      $form['a3'] = [
+      $form[$donationType]['a3'] = [
         '#type' => 'hidden',
       ];
       // Subscription duration.
-      $form['p3'] = [
+      $form[$donationType]['p3'] = [
         '#type' => 'hidden',
         '#default_value' => $config->get($donationType . '.duration'),
       ];
       // Regular subscription units of duration.
-      $form['t3'] = [
+      $form[$donationType]['t3'] = [
         '#type' => 'hidden',
         '#default_value' => $config->get($donationType . '.unit'),
       ];
@@ -167,13 +169,13 @@ class DonationForm extends FormBase {
     if ($config->get('ipn.enabled') !== FALSE) {
       $ipnPath = $config->get('ipn.path');
       $notifyUrl = !empty($ipnPath) ? $baseUrl . $config->get('ipn.path') : Url::fromRoute('recurring_donation.ipn')->toString();
-      $form['notify_url'] = [
+      $form[$donationType]['notify_url'] = [
         '#type' => 'hidden',
         '#default_value' => $notifyUrl,
       ];
     }
 
-    $form['actions'] = [
+    $form[$donationType]['actions'] = [
       '#type' => 'actions',
       'submit' => [
         '#type' => 'submit',
@@ -190,7 +192,7 @@ class DonationForm extends FormBase {
     $url = 'https://www.' . $mode . 'paypal.com/cgi-bin/webscr';
     $form['#action'] = Url::fromUri($url, ['external' => TRUE])->toString();
 
-    $form['#attached'] = [
+    $form[$donationType]['#attached'] = [
       'library' => [
         'recurring_donation/recurring_donation',
       ],

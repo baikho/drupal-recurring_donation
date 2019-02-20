@@ -8,8 +8,9 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\recurring_donation\Form\DonationForm;
 use Drupal\recurring_donation\DonationType;
+use Drupal\recurring_donation\Form\DonationForm;
+use Drupal\recurring_donation\Form\DonationTypeSelectionForm;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -17,8 +18,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @Block(
  *   id = "recurring_donation_block",
- *   admin_label = @Translation("Recurring PayPal donations"),
- *   category = @Translation("Forms")
+ *   admin_label = @Translation("PayPal donations"),
+ *   category = @Translation("Recurring PayPal Donations")
  * )
  */
 class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface {
@@ -81,8 +82,13 @@ class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface
    * {@inheritdoc}
    */
   public function build() {
-    $build = [];
+
     $config = $this->configFactory->get('recurring_donation.settings');
+
+    $build = [
+      $this->formBuilder->getForm(DonationTypeSelectionForm::class),
+    ];
+
     foreach (DonationType::getAll() as $donationType) {
       // Early opt-out if donation type is not enabled.
       if ($config->get($donationType . '.enabled') !== TRUE) {
@@ -90,6 +96,7 @@ class DonationBlock extends BlockBase implements ContainerFactoryPluginInterface
       }
       $build[] = $this->formBuilder->getForm(DonationForm::class, $donationType);
     }
+
     return $build;
   }
 
