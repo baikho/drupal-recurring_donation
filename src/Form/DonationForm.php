@@ -168,7 +168,7 @@ class DonationForm extends FormBase {
 
     if ($config->get('ipn.enabled') !== FALSE) {
       $ipnPath = $config->get('ipn.path');
-      $notifyUrl = !empty($ipnPath) ? $baseUrl . $config->get('ipn.path') : Url::fromRoute('recurring_donation.ipn')->toString();
+      $notifyUrl = !empty($ipnPath) ? $baseUrl . $config->get('ipn.path') : Url::fromRoute('recurring_donation.ipn', [], ['absolute' => TRUE])->toString();
       $form[$donationType]['notify_url'] = [
         '#type' => 'hidden',
         '#default_value' => $notifyUrl,
