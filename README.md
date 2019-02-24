@@ -1,22 +1,30 @@
-Recurring PayPal Donations
---------------------------
+INTRODUCTION
+------------
 
-### About
+Simple 8.x version of the [PayPal Donations](https://www.drupal.org/project/paypal_donations) module.
 
-The primary features of this module:
+- Provides a custom block, embedding a single AND/OR recurring form directing to PayPal's off-site donation page
+- Easy configuration interface
+- Input style choice of either radio buttons or a dropdown
+- Custom amount option
+- Recurring duration control
+- Instant Payment Notification (IPN) support
 
-- A simple configuration form
-- A custom block embedding a single AND/OR recurring donations form
-- IPN support
+REQUIREMENTS
+------------
 
-### Installation
+This module requires the following composer packages:
 
-1. Enable module at `/admin/modules` 
+ * [PayPal Core SDK](https://github.com/paypal/sdk-core-php)
 
-   or through drush `drush en recurring_donation -y`
+INSTALLATION
+------------
 
-2. Navigate to settings form through `Admin > Configuration > Web services > Recurring PayPal donations` 
+Install as usual, see [Installing contributed modules](https://drupal.org/node/895232) for further information.
+
+CONFIGURATION
+-------------
+
+1. Navigate to settings form through `Admin > Configuration > Web services > Recurring PayPal donations`
 
    or directly at path `/admin/config/services/recurring-paypal-donations`
-
-3. Place a "Recurring PayPal donations" block through `Admin > Structure > Block layout`
